@@ -1,0 +1,11 @@
+# vim:ft-ansible
+
+journalbeat.inputs:
+- paths: []
+  seek: cursor
+
+processors:
+- add_cloud_metadata: ~
+
+output.logstash:
+  hosts: ["logstash:5044"]

@@ -1,0 +1,21 @@
+# vim:ft=ansible
+
+version: '2.2'
+
+services:
+  metricbeat:
+    build: .
+    container_name: metricbeat
+    user: root
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
+      - /proc:/hostfs/proc:ro
+      - /:/hostfs:ro
+    networks:
+      - beats
+
+networks:
+  beats:
+    name: beats
+

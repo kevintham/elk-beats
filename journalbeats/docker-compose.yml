@@ -1,0 +1,22 @@
+# vim:ft=ansible
+
+version: '2.2'
+
+services:
+  journalbeat:
+    build: .
+    container_name: journalbeat
+    user: root
+    volumes:
+      - /var/log/journal:/var/log/journal
+      - /etc/machine-id:/etc/machine-id
+      - /run/systemd:/run/systemd
+      - /etc/hostname:/etc/hostname:ro
+      - ./fields.yml:/usr/share/journalbeat/fields.yml
+    networks:
+      - beats
+
+networks:
+  beats:
+    name: beats
+

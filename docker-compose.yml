@@ -1,0 +1,68 @@
+# vim:ft=ansible:
+version: '2.2'
+
+services:
+  elasticsearch:
+    image: "docker.elastic.co/elasticsearch/elasticsearch:${ES_VERSION}"
+    container_name: elasticsearch
+    hostname: elasticsearch
+    environment:
+      - cluster.name=es-cluster
+      - discovery.type=single-node
+      - node.name=es-node-1
+      - path.data=/usr/share/elasticsearch/data
+      - http.port=9200
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms${ES_JVM_HEAP} -Xmx${ES_JVM_HEAP}"
+    mem_limit: ${ES_MEM_LIMIT}
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    ports:
+      - '127.0.0.1:9200:9200'
+    networks:
+      - elk_stack
+    healthcheck:
+      test: ["CMD", "curl", "-s", "-f", "http://localhost:9200/_cat/health"]
+    
+  kibana:
+    container_name: kibana
+    hostname: kibana
+    image: "docker.elastic.co/kibana/kibana:${ES_VERSION}"
+    environment:
+      - server.port=5601
+      - elasticsearch.url="http://elasticsearch:9200"
+      - server.name="kibana"
+    ports:
+      - '127.0.0.1:5601:5601'
+    networks:
+      - elk_stack
+    depends_on:
+      - elasticsearch
+
+  logstash:
+    container_name: logstash
+    build: 
+      context: ./logstash
+      args:
+        ES_VERSION: ${ES_VERSION} 
+    hostname: logstash
+    env_file:
+      - .env
+    networks:
+      - elk_stack
+      - beats
+    depends_on:
+      - elasticsearch
+
+volumes:
+  es-data:
+
+networks:
+  elk_stack:
+    name: elk_stack
+  beats:
+    name: beats
